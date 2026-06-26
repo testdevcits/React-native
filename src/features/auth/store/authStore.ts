@@ -65,6 +65,18 @@ export const {
 
 export const authReducer = authSlice.reducer;
 
+const formatUser = (apiUser: any): User => {
+  if (!apiUser) return null as any;
+  const firstName = apiUser.profile?.firstName || '';
+  const lastName = apiUser.profile?.lastName || '';
+  const fullName = apiUser.name || `${firstName} ${lastName}`.trim() || apiUser.email;
+  return {
+    ...apiUser,
+    id: apiUser.id || apiUser._id,
+    name: fullName,
+  };
+};
+
 export const useAuthStore = () => {
   const dispatch = useDispatch();
   const state = useSelector((s: RootState) => s.auth);
@@ -78,7 +90,11 @@ export const useAuthStore = () => {
     dispatch(clearErrorsAction());
     try {
       const response = await apiClient.post(ENDPOINTS.auth.login, body);
-      const { accessToken, refreshToken, user } = response.data.data;
+      const data = response.data.data;
+      const user = formatUser(data.user || data);
+      
+      const accessToken = data.tokens?.accessToken || data.accessToken;
+      const refreshToken = data.tokens?.refreshToken || data.refreshToken;
       
       await saveTokens(accessToken, refreshToken);
       dispatch(setAuthSuccess(user));
@@ -104,8 +120,24 @@ export const useAuthStore = () => {
     dispatch(setLoading(true));
     dispatch(clearErrorsAction());
     try {
-      const response = await apiClient.post(ENDPOINTS.auth.register, body);
-      const { accessToken, refreshToken, user } = response.data.data;
+      const nameParts = (body.name || '').trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      const payload = {
+        ...body,
+        profile: body.profile || {
+          firstName,
+          lastName,
+        }
+      };
+
+      const response = await apiClient.post(ENDPOINTS.auth.register, payload);
+      const data = response.data.data;
+      const user = formatUser(data.user || data);
+      
+      const accessToken = data.tokens?.accessToken || data.accessToken;
+      const refreshToken = data.tokens?.refreshToken || data.refreshToken;
       
       await saveTokens(accessToken, refreshToken);
       dispatch(setAuthSuccess(user));
@@ -142,7 +174,8 @@ export const useAuthStore = () => {
     dispatch(setLoading(true));
     try {
       const response = await apiClient.get(ENDPOINTS.auth.status);
-      dispatch(setAuthSuccess(response.data.data.user || response.data.data));
+      const rawUser = response.data.data.user || response.data.data;
+      dispatch(setAuthSuccess(formatUser(rawUser)));
     } catch (err) {
       await clearTokens();
       dispatch(logoutSuccess());

@@ -3,6 +3,10 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  profile?: {
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export interface Category {

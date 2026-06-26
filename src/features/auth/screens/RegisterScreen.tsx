@@ -149,7 +149,7 @@ export const RegisterScreen = ({ navigation }: any) => {
               <AppText variant="body" color={colors.textLight}>
                 Already have an account?{' '}
               </AppText>
-              <TouchableOpacity onPress={() => navigation.navigate('Login')} activeOpacity={0.7}>
+              <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.7}>
                 <AppText variant="medium" color={colors.primary}>
                   Sign In
                 </AppText>

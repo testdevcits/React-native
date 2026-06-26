@@ -100,7 +100,15 @@ export const useHomeStore = () => {
   const fetchCategories = async () => {
     try {
       const response = await apiClient.get(ENDPOINTS.products.categories);
-      dispatch(setCategories(response.data.data));
+      const rawCategories = response.data.data || [];
+      const mappedCategories = rawCategories.map((cat: any) => ({
+        ...cat,
+        id: cat._id || cat.id,
+        name: cat.title || cat.name,
+        slug: cat.categoryKey || cat.slug,
+        parentId: cat.parentKey || cat.parentId,
+      }));
+      dispatch(setCategories(mappedCategories));
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
