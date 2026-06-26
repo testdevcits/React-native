@@ -93,6 +93,19 @@ export const {
 
 export const homeReducer = homeSlice.reducer;
 
+const formatProduct = (item: any): Product => {
+  if (!item) return null as any;
+  const hasDiscount = item.mrp && item.price && item.price < item.mrp;
+  return {
+    ...item,
+    id: item._id || item.id,
+    name: item.title || item.name || '',
+    description: item.shortDescription || item.description || '',
+    price: hasDiscount ? item.mrp : item.price,
+    discountPrice: hasDiscount ? item.price : undefined,
+  };
+};
+
 export const useHomeStore = () => {
   const dispatch = useDispatch();
   const state = useSelector((s: RootState) => s.home);
@@ -146,12 +159,13 @@ export const useHomeStore = () => {
       }
 
       const { data: newProducts, pagination } = response.data;
+      const mappedProducts = (newProducts || []).map(formatProduct);
       const totalPages = pagination?.totalPages || 1;
       const currentPage = pagination?.page || nextPage;
 
       dispatch(
         setFetchSuccess({
-          products: newProducts,
+          products: mappedProducts,
           page: currentPage + 1,
           totalPages,
           hasMore: currentPage < totalPages,
@@ -180,12 +194,13 @@ export const useHomeStore = () => {
         },
       });
       const { data: newProducts, pagination } = response.data;
+      const mappedProducts = (newProducts || []).map(formatProduct);
       const totalPages = pagination?.totalPages || 1;
       const currentPage = pagination?.page || nextPage;
 
       dispatch(
         setFetchSuccess({
-          products: newProducts,
+          products: mappedProducts,
           page: currentPage + 1,
           totalPages,
           hasMore: currentPage < totalPages,
@@ -225,12 +240,13 @@ export const useHomeStore = () => {
         });
       }
       const { data: newProducts, pagination } = response.data;
+      const mappedProducts = (newProducts || []).map(formatProduct);
       const totalPages = pagination?.totalPages || 1;
       const currentPage = pagination?.page || nextPage;
 
       dispatch(
         setFetchSuccess({
-          products: newProducts,
+          products: mappedProducts,
           page: currentPage + 1,
           totalPages,
           hasMore: currentPage < totalPages,
@@ -270,12 +286,13 @@ export const useHomeStore = () => {
         });
       }
       const { data: newProducts, pagination } = response.data;
+      const mappedProducts = (newProducts || []).map(formatProduct);
       const totalPages = pagination?.totalPages || 1;
       const currentPage = pagination?.page || nextPage;
 
       dispatch(
         setFetchSuccess({
-          products: newProducts,
+          products: mappedProducts,
           page: currentPage + 1,
           totalPages,
           hasMore: currentPage < totalPages,
